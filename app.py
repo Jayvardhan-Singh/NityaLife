@@ -11,14 +11,16 @@ from matplotlib.patches import Patch
 # PROBLEM SOLVED: Users need clear definitions of what to track (Average Weekday, what counts as a meal).
 # We use st.info() to create a highly visible instruction box right at the top.
 # ==========================================
-st.set_page_config(page_title="Bio-Clock Tracker", page_icon="⌚", layout="wide")
-st.title("24-Hour Bio-Clock 🌙🚶‍♂️🍴")
+st.set_page_config(page_title="Nitya Bio-Clock Tracker", page_icon="⌚", layout="wide")
+st.title("Nitya Bio-Clock Tracker")
 
 st.info("""
 **📋 Instructions for Use:**
 1. Log your timings for an **Average Weekday**.
 2. Mark your **Sleep**, **Brisk Walk+** (activity), and **Meals**.
 3. **Important:** A "Meal" comprises *anything* consumed other than plain water (e.g., snacks, coffee with milk, juices all count).
+4. In Activity Mark time of Brisk walk and all activities more severe to Brisk Walk.
+5. If you want to upload a csv file, kindly download a sample of csv file first and upload a csv with the same headers and categories.
 """)
 
 # Initialize counters
@@ -103,7 +105,7 @@ def calc_duration(s, e):
     sm, em = s.hour*60+s.minute, e.hour*60+e.minute
     return (em - sm) if em >= sm else (1440 - sm + em)
 
-# 1. Total "Night" Sleep
+# 1. Total Sleep
 total_sleep_mins = sum(calc_duration(s, e) for s, e in sleeps)
 sleep_str = f"{total_sleep_mins // 60}h {total_sleep_mins % 60}m"
 
@@ -146,7 +148,7 @@ fig.text(0.05, 0.92, f"Age: {user_age}", fontsize=10)
 fig.text(0.05, 0.89, f"Date: {current_date}", fontsize=10)
 
 # Health Metrics (Top Right)
-fig.text(0.70, 0.95, f"Total 'Night' Sleep: {sleep_str}", fontsize=11, fontweight='bold', color='black')
+fig.text(0.70, 0.95, f"Total Sleep: {sleep_str}", fontsize=11, fontweight='bold', color='black')
 fig.text(0.70, 0.92, f"Total Brisk+: {walk_str}", fontsize=11, fontweight='bold', color='#27ae60')
 fig.text(0.70, 0.89, f"Max Fasting: {fast_str}", fontsize=11, fontweight='bold', color='#c0392b')
 
