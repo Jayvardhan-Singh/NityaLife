@@ -11,7 +11,7 @@ from matplotlib.patches import Patch
 # PROBLEM SOLVED: Users need clear definitions of what to track (Average Weekday, what counts as a meal).
 # We use st.info() to create a highly visible instruction box right at the top.
 # ==========================================
-st.set_page_config(page_title="Nitya Bio-Clock Tracker", page_icon="⌚", layout="wide")
+st.set_page_config(page_title="Nitya Bio-Clock", page_icon="⌚", layout="wide")
 st.title("Nitya Bio-Clock Tracker")
 
 st.info("""
@@ -39,8 +39,12 @@ with st.sidebar:
     st.header("👤 Personal Details")
     user_name = st.text_input("Name", value="User")
     user_age = st.number_input("Age", min_value=0, max_value=120, value=25)
-    current_date = datetime.date.today().strftime("%B %d, %Y")
-    
+
+    # current_date = datetime.date.today().strftime("%B %d, %Y")
+    # Using date_input solves the timezone discrepancy by letting the user confirm the date.
+    selected_date = st.date_input("Date (Local Time)", value=datetime.date.today())
+    current_date = selected_date.strftime("%B %d, %Y")
+
     st.divider()
     st.header("📂 Data Management")
     uploaded_file = st.file_uploader("Upload CSV", type=['csv'])
