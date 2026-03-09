@@ -12,7 +12,7 @@ from matplotlib.patches import Patch
 # We use st.info() to create a highly visible instruction box right at the top.
 # ==========================================
 st.set_page_config(page_title="Nitya Bio-Clock", page_icon="⌚", layout="wide")
-st.title("Nitya Bio-Clock Tracker")
+st.title("Nitya Bio-Clock")
 
 st.info("""
 **📋 Instructions for Use:**
