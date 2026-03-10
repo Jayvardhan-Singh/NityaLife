@@ -132,7 +132,7 @@ fig.text(0.05, 0.92, f"Age: {user_age}", fontsize=10)
 fig.text(0.05, 0.89, f"Date: {formatted_date}", fontsize=10)
 
 # Health Metrics (Top Right)
-fig.text(0.68, 0.95, f"Total 'Night' Sleep: {sleep_str}", fontsize=10, fontweight='bold')
+fig.text(0.68, 0.95, f"Total Sleep: {sleep_str}", fontsize=10, fontweight='bold')
 fig.text(0.68, 0.92, f"Total Brisk+: {walk_str}", fontsize=10, fontweight='bold', color='#27ae60')
 fig.text(0.68, 0.89, f"Max Fasting: {fast_str}", fontsize=10, fontweight='bold', color='#c0392b')
 
