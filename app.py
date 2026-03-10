@@ -8,9 +8,16 @@ from matplotlib.patches import Patch
 
 # ==========================================
 # CHUNK 1: APP CONFIGURATION & STATE RESET
+# PROBLEM SOLVED: Sets up the page layout. Added `initial_sidebar_state="expanded"`
+# so the user immediately sees the input controls without having to click to open them.
 # ==========================================
-st.set_page_config(page_title="NityaBioClock", page_icon="⌚", layout="wide")
-st.title("Nitya Bio-Clock")
+st.set_page_config(
+    page_title="NityaBioClock", 
+    page_icon="⌚", 
+    layout="wide", 
+    initial_sidebar_state="expanded"
+)
+st.title("Nitya Bio-Clock 🌙🚶‍♂️🍴")
 
 st.info("""
 **📋 Instructions for Use:**
@@ -18,7 +25,6 @@ st.info("""
 2. Mark your **Sleep**, **Brisk Walk+** (activity), and **Meals**.
 3. **Important:** A "Meal" comprises *anything* consumed other than plain water (e.g., snacks, coffee with milk, juices all count).
 4. In Activity Mark time of Brisk walk and all activities more severe to Brisk Walk.
-5. If you want to upload a csv file, kindly download a sample of csv file first and upload a csv with the same headers and categories.
 """)
 
 # Callback function to completely reset the app state
@@ -36,6 +42,8 @@ def remove_item(key):
 
 # ==========================================
 # CHUNK 2: USER METADATA & DATA MANAGEMENT
+# PROBLEM SOLVED: Collects user details to stamp on the final chart and provides
+# a global reset button to easily clear all fields for a new entry.
 # ==========================================
 with st.sidebar:
     st.header("👤 Personal Details")
@@ -46,66 +54,43 @@ with st.sidebar:
     formatted_date = selected_date.strftime("%B %d, %Y")
     
     st.divider()
-    st.header("📂 Data Management")
-    
-    # The Reset Button is placed here for easy access
     st.button("🔄 Reset All Data", on_click=reset_app, use_container_width=True)
-    
-    uploaded_file = st.file_uploader("Upload CSV", type=['csv'])
+    st.divider()
 
 sleeps, activities, meals = [], [], []
 
 # ==========================================
-# CHUNK 3: DATA INGESTION
+# CHUNK 3: MANUAL DATA INGESTION
+# PROBLEM SOLVED: Renders the dynamic input fields in the sidebar based on the 
+# session state counters, allowing users to log multiple events of each type.
 # ==========================================
-if uploaded_file is not None:
-    try:
-        df_uploaded = pd.read_csv(uploaded_file)
-        if {'Category', 'Start_Time', 'End_Time'}.issubset(df_uploaded.columns):
-            for index, row in df_uploaded.iterrows():
-                try:
-                    start_t = pd.to_datetime(row['Start_Time']).time()
-                    if row['Category'] == 'Meal':
-                        meals.append(start_t)
-                    else:
-                        end_t = pd.to_datetime(row['End_Time']).time()
-                        if row['Category'] == 'Sleep': 
-                            sleeps.append((start_t, end_t))
-                        elif row['Category'] == 'Brisk Walk+': 
-                            activities.append({'start': start_t, 'end': end_t})
-                except Exception: 
-                    continue 
-            st.sidebar.success("CSV Successfully Loaded!")
-        else:
-            st.sidebar.error("Invalid CSV Format.")
-    except Exception: 
-        st.sidebar.error("Error reading the file.")
-else:
-    with st.sidebar:
-        st.subheader("🌙 Sleep")
-        for i in range(st.session_state.sleep_count):
-            col1, col2 = st.columns(2)
-            s = col1.time_input(f"Bed {i+1}", value=datetime.time(23, 0), key=f"s_{i}", step=datetime.timedelta(minutes=5))
-            e = col2.time_input(f"Wake {i+1}", value=datetime.time(7, 0), key=f"e_{i}", step=datetime.timedelta(minutes=5))
-            sleeps.append((s, e))
-        st.button("➕ Add Sleep", on_click=add_item, args=('sleep_count',))
-        
-        st.subheader("🚶‍♂️ Brisk Walk+")
-        for i in range(st.session_state.activity_count):
-            col1, col2 = st.columns(2)
-            s = col1.time_input(f"Start {i+1}", value=datetime.time(8, 0), key=f"act_s_{i}", step=datetime.timedelta(minutes=5))
-            e = col2.time_input(f"End {i+1}", value=datetime.time(9, 0), key=f"act_e_{i}", step=datetime.timedelta(minutes=5))
-            activities.append({'start': s, 'end': e})
-        st.button("➕ Add Walk", on_click=add_item, args=('activity_count',))
+with st.sidebar:
+    st.subheader("🌙 Sleep")
+    for i in range(st.session_state.sleep_count):
+        col1, col2 = st.columns(2)
+        s = col1.time_input(f"Bed {i+1}", value=datetime.time(23, 0), key=f"s_{i}", step=datetime.timedelta(minutes=5))
+        e = col2.time_input(f"Wake {i+1}", value=datetime.time(7, 0), key=f"e_{i}", step=datetime.timedelta(minutes=5))
+        sleeps.append((s, e))
+    st.button("➕ Add Sleep", on_click=add_item, args=('sleep_count',))
+    
+    st.subheader("🚶‍♂️ Brisk Walk+")
+    for i in range(st.session_state.activity_count):
+        col1, col2 = st.columns(2)
+        s = col1.time_input(f"Start {i+1}", value=datetime.time(8, 0), key=f"act_s_{i}", step=datetime.timedelta(minutes=5))
+        e = col2.time_input(f"End {i+1}", value=datetime.time(9, 0), key=f"act_e_{i}", step=datetime.timedelta(minutes=5))
+        activities.append({'start': s, 'end': e})
+    st.button("➕ Add Walk", on_click=add_item, args=('activity_count',))
 
-        st.subheader("🍴 Meals")
-        for i in range(st.session_state.meal_count):
-            m = st.time_input(f"Meal {i+1}", value=datetime.time(13, 0), key=f"m_{i}", step=datetime.timedelta(minutes=5))
-            meals.append(m)
-        st.button("➕ Add Meal", on_click=add_item, args=('meal_count',))
+    st.subheader("🍴 Meals")
+    for i in range(st.session_state.meal_count):
+        m = st.time_input(f"Meal {i+1}", value=datetime.time(13, 0), key=f"m_{i}", step=datetime.timedelta(minutes=5))
+        meals.append(m)
+    st.button("➕ Add Meal", on_click=add_item, args=('meal_count',))
 
 # ==========================================
 # CHUNK 4: METRIC CALCULATIONS
+# PROBLEM SOLVED: Calculates total duration for sleep/walk and finds the maximum
+# interval between consecutive meals (including the overnight gap).
 # ==========================================
 def calc_duration(s, e):
     sm, em = s.hour*60+s.minute, e.hour*60+e.minute
@@ -129,6 +114,8 @@ fast_str = f"{max_fast_mins // 60}h {max_fast_mins % 60}m"
 
 # ==========================================
 # CHUNK 5: MATPLOTLIB CHART
+# PROBLEM SOLVED: Configures the 24-hour polar projection and stamps the 
+# calculated metrics and user metadata directly onto the figure canvas.
 # ==========================================
 fig, ax = plt.subplots(figsize=(10, 11), subplot_kw={'projection': 'polar'})
 ax.set_theta_zero_location("N")
@@ -145,15 +132,14 @@ fig.text(0.05, 0.92, f"Age: {user_age}", fontsize=10)
 fig.text(0.05, 0.89, f"Date: {formatted_date}", fontsize=10)
 
 # Health Metrics (Top Right)
-fig.text(0.68, 0.95, f"Total Sleep: {sleep_str}", fontsize=10, fontweight='bold')
+fig.text(0.68, 0.95, f"Total 'Night' Sleep: {sleep_str}", fontsize=10, fontweight='bold')
 fig.text(0.68, 0.92, f"Total Brisk+: {walk_str}", fontsize=10, fontweight='bold', color='#27ae60')
 fig.text(0.68, 0.89, f"Max Fasting: {fast_str}", fontsize=10, fontweight='bold', color='#c0392b')
 
 # ==========================================
 # CHUNK 6: UNIFIED SINGLE-RING DRAWING
-# PROBLEM SOLVED: Compressing 3 rings into 1 requires a visual hierarchy.
-# If events overlap in the same 5-minute window, Meal (Red) takes top priority, 
-# Walk (Green) is second, and Sleep (Black) is the base.
+# PROBLEM SOLVED: Evaluates every 5-minute block of the day and colors it based 
+# on a hierarchy (Meal > Walk > Sleep) to create a single clean visual ring.
 # ==========================================
 num_segments = 288
 segment_angle = 2 * np.pi / num_segments
@@ -165,21 +151,18 @@ def is_in(t, s, e):
 for i in range(num_segments):
     t_mid = (i * 5) + 2.5 
     
-    # Evaluate boolean states for this exact 5-minute block
     slp = any(is_in(t_mid, s, e) for s, e in sleeps)
     wlk = any(is_in(t_mid, a['start'], a['end']) for a in activities)
     ml = any(m.hour*60+m.minute >= i*5 and m.hour*60+m.minute < (i+1)*5 for m in meals)
     
-    # Determine segment color based on hierarchy
     color = '#f8f9fa' # Default awake/inactive background
     if ml:
-        color = '#e74c3c' # Red
+        color = '#e74c3c' # Red (Meal)
     elif wlk:
-        color = '#2ecc71' # Green
+        color = '#2ecc71' # Green (Walk)
     elif slp:
-        color = 'black'   # Black
+        color = 'black'   # Black (Sleep)
 
-    # Draw the single unified ring (from radius 0.5 to 0.9)
     ax.bar(i*segment_angle, 0.4, width=segment_angle, bottom=0.5, 
            color=color, edgecolor='white', linewidth=0.1, align='edge')
 
@@ -189,6 +172,8 @@ ax.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.1
 
 # ==========================================
 # CHUNK 7: RENDERING & EXPORT
+# PROBLEM SOLVED: Renders the plot in the UI and creates downloadable files 
+# (PNG for the visual, CSV for the raw data) directly from memory.
 # ==========================================
 col_left, col_right = st.columns([3, 1])
 with col_left:
